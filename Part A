@@ -1,0 +1,69 @@
+import pandas as pd
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+from sklearn import tree
+import matplotlib.pyplot as plt
+
+# Read the training data and assign column names
+column_names = [str(i) for i in range(1, 130)]
+data = pd.read_csv('./TrainingDataBinary.csv', names=column_names)
+data.columns = [*data.columns[:-1], 'label']
+data.head()
+
+# Separate features (X) and target variable (Y)
+X = data.iloc[:, :-1]
+Y = data.iloc[:, -1]
+
+# Read the training data again for splitting into train and validation sets
+train_data = pd.read_csv("TrainingDataBinary.csv")
+
+# Separate the features (X) and target variable (y)
+X = train_data.iloc[:, :-1]  # All columns except the last one
+y = train_data.iloc[:, -1]  # Last column (labels)
+
+# Split the data into train and validation sets
+X_train, X_val, y_train, y_val = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Create a decision tree classifier
+classifier = DecisionTreeClassifier()
+
+# Train the classifier on the training data
+classifier.fit(X_train, y_train)
+
+# Make predictions on the validation set
+y_pred = classifier.predict(X_val)
+
+# Evaluate the model
+accuracy = accuracy_score(y_val, y_pred)
+print("Accuracy:", accuracy)
+report = classification_report(y_val, y_pred)
+print("Classification Report:\n", report)
+
+# Visualize the decision tree
+plt.figure(figsize=(10, 8))
+tree.plot_tree(classifier, filled=True)
+plt.show()
+
+# Fit the model on the entire training data
+X_train = data.iloc[:, :-1]
+Y_train = data.iloc[:, -1]
+model = DecisionTreeClassifier()
+model.fit(X_train, Y_train)
+
+# Read the testing data
+column_names2 = [str(i) for i in range(1, 129)]
+X_test = pd.read_csv('./TestingDataBinary.csv', names=column_names2)
+
+# Make predictions on the testing data
+y_pred = model.predict(X_test)
+
+# Add predictions as a new column in the testing data
+X_test['predictions'] = y_pred
+X_test.head()
+
+# Save the results to a CSV file
+X_test.to_csv('Results/BinaryDataFinal.csv')
+
+# Save the results to an Excel file
+X_test.to_excel('Results/BinaryDataFinal.xlsx')
